@@ -1,132 +1,37 @@
+from openai import OpenAI
+import os
 import streamlit as st
-import pandas as pd
 
-st.markdown("""
-    <style>
-    .main {
-        text-align: center; 
-    }
-    </style>
-""", unsafe_allow_html=True)
+api_key = os.getenv("OPENAI_API_KEY1")
 
-# 스타일 적용
-st.markdown("""
-    <style>
-    .title {
-        font-style: italic;
-        text-align: center; 
-        font-size: 2.5em;  
-        font-weight: bold; 
-    }
-    .icon {
-        font-style: normal;}
-    </style>
-""", unsafe_allow_html=True)
+# OpenAI Client 초기화
+client = OpenAI(api_key=api_key)
 
-# HTML 기반 제목 출력
-st.markdown("""
-    <div class="title">
-        <span class="icon">🎁</span>
-        <span style="color:grey;">MERRY</span> 
-        <span style="color:red;">X</span>
-        <span style="color:green;">-</span>
-        <span style="color:red;">M</span>
-        <span style="color:green;">A</span>
-        <span style="color:red;">S</span>    
-        <span class="icon">🎁</span>    
-            </div>
-""", unsafe_allow_html=True)
+st.title('🇰🇷리얼 일본어 번역 봇🇯🇵')
 
-st.markdown("""
-    <style>
-    .ascii-art {
-        font-family: monospace;
-        white-space: pre-wrap; 
-        text-align: center; 
-        line-height: 1.5; 
-    }
-    </style>
-""", unsafe_allow_html=True)
+prompt = st.text_input("입력")
 
-# '.'을 '&nbsp;'로
-def convert_dots_to_nbsp(ascii_art_line):
-    """
-    '.'을 '&nbsp;'로 변환
-    :param ascii_art_line: 아스키 아트 문자열 한 줄
-    :return: 변환된 문자열
-    """
-    return ascii_art_line.replace('.', '&nbsp;')
+if st.button('전송'):
 
-# ASCII 아트 데이터
-ascii_art_lines = [
-    "....✦.........................✧.............✦........................✦..",
-    "...................✦..............🌟......................✧............",
-    "....✧............................*✨*..........✧........................",
-    ".........✦...........✧.........✨▲▲▲✨................✦...........✦...",
-    "..✦...........................*✨*****✨*...............................",
-    "................✧............✨*********✨................✧.............",
-    ".....✧......................*✨***********✨*...........................✧",
-    ".................................|||||.................................",
-    "..................................|||||.................................."
-]
-
-# AA Streamlit에 출력
-for line in ascii_art_lines:
-    converted_line = convert_dots_to_nbsp(line)  # '.'을 '&nbsp;'로 변환
-    st.markdown(f"<p class='ascii-art'>{converted_line}</p>", unsafe_allow_html=True)
-
-
-
-
-st.write(" ")
-st.write(" ")
-st.write(" ")
-st.write(" ")
-st.write(" ")
-
-age = st.slider("몇 살이예요?", 0, 100, 25)
-st.write("나는 ", age, "살!")
-
-st.write(" ")
-st.write(" ")
-st.write(" ")
-
-option = st.selectbox(
-    "선물을 어디에 두면 좋을지 알려주세요",
-    ("문앞에 두세요", "양말 속에 넣어주세요", "굴뚝으로 떨어뜨려주세요", "직접 받을게요"))
-
-st.write("선물은 ", option)
-
-st.write(" ")
-st.write(" ")
-st.write(" ")
-
-
-
-with st.form("form_v2"):
-    text1 = st.text_input("이름", key="text1_with_form_v2")
-    text2 = st.text_area("받고 싶은 선물", key="text2_with_form_v2")
-    text3 = st.text_area("주소", key="text3_with_form_v2")
-    submitted = st.form_submit_button("주세요")
-
-if submitted:
-    st.markdown("**이름**")  
-    st.write(text1)  
-    st.markdown("**받고 싶은 선물**")
-    st.write(text2)  
-    st.markdown("**주소**")
-    st.write(text3)  
-else:
-    st.write("")
-
-
-
-st.write("")
-st.write("")
-st.write("")
-
-st.write("입력정보를 확인하고 checkbox를 클릭해주세요!")
-agree = st.checkbox("확인완료")
-
-if agree:
-    st.write("출발해요🎅🏼")
+# Chat Completion 생성
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            },
+            {
+                "role": "system",
+                "content": "최대한 한국어 원문의 느낌을 일본어의 느낌으로 살려서 일본인이 쓴 것처럼 일본어로 출력해줘. 마치 번역기처럼. 최대한 일본사람인거야!! 한국어가 어떤 느낌으로 쓰였는지 몇살의 어떤 사람이 왜 쓴건지 의도까지 파악해서 일본인에게 투영해 !! 번역된 일본어만 출력해줘."
+                
+            }
+        ],
+        # 하이퍼파라미터
+        temperature=1, # 응답을 랜덤하게 생성 - 기본값
+        max_tokens=2048, # 응답 최대 길이 (토큰단위) - 기본값 : max_token = 4096
+        top_p=1, # Nucleus Sampling 비활성화 (모든 확률 고려)
+        frequency_penalty=0, # 같은 단어를 반복하는 패널티 없음
+        presence_penalty=0 # 새로운 주제를 추가하는 패널티 없음
+    )
+    st.write(response.choices[0].message.content)
