@@ -1,8 +1,7 @@
 from openai import OpenAI
-import os
 import streamlit as st
 
-api_key = os.getenv("OPENAI_API_KEY0")
+api_key = st.secrets["api_key"]
 
 # OpenAI Client 초기화
 client = OpenAI(api_key=api_key)
